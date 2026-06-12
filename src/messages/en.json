@@ -1,0 +1,51 @@
+{
+  "nav": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "cart": "Cart",
+    "login": "Log in",
+    "register": "Sign up",
+    "logout": "Log out"
+  },
+  "home": {
+    "catalogTitle": "Book Catalog",
+    "catalogSubtitle": "Browse our complete collection",
+    "filterByAuthor": "Filter by author",
+    "allAuthors": "All authors",
+    "books": "book(s)"
+  },
+  "product": {
+    "addToCart": "Add to cart",
+    "buy": "Buy now",
+    "stock": "Stock",
+    "description": "Description",
+    "author": "Author",
+    "backToHome": "Back to home",
+    "notFound": "Product not found"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "loginTitle": "Log in",
+    "registerTitle": "Create account",
+    "submit": "Submit",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "signUp": "Sign up",
+    "signIn": "Sign in",
+    "loginError": "Invalid email or password"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "empty": "You have no favorite products"
+  },
+  "cart": {
+    "title": "My Cart",
+    "empty": "Your cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "quantity": "Quantity",
+    "remove": "Remove"
+  }
+}

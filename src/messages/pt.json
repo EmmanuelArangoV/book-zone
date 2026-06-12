@@ -1,0 +1,51 @@
+{
+  "nav": {
+    "home": "Início",
+    "favorites": "Favoritos",
+    "cart": "Carrinho",
+    "login": "Entrar",
+    "register": "Cadastrar-se",
+    "logout": "Sair"
+  },
+  "home": {
+    "catalogTitle": "Catálogo de Livros",
+    "catalogSubtitle": "Explore nossa coleção completa",
+    "filterByAuthor": "Filtrar por autor",
+    "allAuthors": "Todos os autores",
+    "books": "livro(s)"
+  },
+  "product": {
+    "addToCart": "Adicionar ao carrinho",
+    "buy": "Comprar agora",
+    "stock": "Estoque",
+    "description": "Descrição",
+    "author": "Autor",
+    "backToHome": "Voltar ao início",
+    "notFound": "Produto não encontrado"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Senha",
+    "name": "Nome",
+    "loginTitle": "Entrar",
+    "registerTitle": "Criar conta",
+    "submit": "Enviar",
+    "noAccount": "Não tem conta?",
+    "haveAccount": "Já tem conta?",
+    "signUp": "Cadastre-se",
+    "signIn": "Entre",
+    "loginError": "E-mail ou senha incorretos"
+  },
+  "favorites": {
+    "title": "Meus Favoritos",
+    "empty": "Você não tem produtos favoritos"
+  },
+  "cart": {
+    "title": "Meu Carrinho",
+    "empty": "Seu carrinho está vazio",
+    "total": "Total",
+    "checkout": "Finalizar compra",
+    "quantity": "Quantidade",
+    "remove": "Remover"
+  }
+}
