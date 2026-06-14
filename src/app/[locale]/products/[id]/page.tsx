@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductActions from "@/components/ProductActions";
-import { getProductById } from "@/services/productService";
+import { connectDB } from "@/lib/mongodb";
+import ProductModel from "@/models/Product";
 import { Product } from "@/types";
 
 interface Props {
@@ -16,7 +17,10 @@ export default async function ProductDetailPage({ params }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations("product");
 
-  const raw = await getProductById(id);
+  await connectDB();
+  const raw = await ProductModel.findById(id)
+    .select("+description +stock +specifications")
+    .lean();
   if (!raw) notFound();
 
   const product: Product = JSON.parse(JSON.stringify(raw));

@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import axios from 'axios';
+import authService from '@/services/authService';
 
 export default function RegisterPage() {
   const t = useTranslations('auth');
@@ -24,19 +26,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? 'Registration failed');
-        setLoading(false);
-        return;
-      }
+      await authService.register(name, email, password);
 
       const result = await signIn('credentials', {
         email,
@@ -51,8 +41,12 @@ export default function RegisterPage() {
       } else {
         router.push(`/${locale}`);
       }
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error ?? 'Registration failed');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
       setLoading(false);
     }
   };

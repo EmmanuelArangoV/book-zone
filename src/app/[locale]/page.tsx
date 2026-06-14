@@ -2,14 +2,18 @@ import { getTranslations } from "next-intl/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCatalog from "@/components/ProductCatalog";
-import { getAllProducts } from "@/services/productService";
-import { Product } from "@/types";
+import { connectDB } from "@/lib/mongodb";
+import Product from "@/models/Product";
+import { Product as ProductType } from "@/types";
 
 export default async function HomePage() {
   const t = await getTranslations("home");
 
-  const raw = await getAllProducts();
-  const products: Product[] = JSON.parse(JSON.stringify(raw));
+  await connectDB();
+  const raw = await Product.find({})
+    .select("name author price image shortDescription category")
+    .lean();
+  const products: ProductType[] = JSON.parse(JSON.stringify(raw));
 
   const authors = [...new Set(products.map(p => p.author))].sort();
 

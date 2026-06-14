@@ -1,7 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { getUserByEmail } from "@/services/userService";
+import { connectDB } from "@/lib/mongodb";
+import User from "@/models/User";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -14,7 +15,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await getUserByEmail(credentials.email as string);
+        await connectDB();
+        const user = await User.findOne({ email: credentials.email as string });
         if (!user) return null;
 
         const passwordMatch = await bcrypt.compare(

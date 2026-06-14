@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import cartService from '@/services/cartService';
 
 interface CartContextType {
   cartCount: number;
@@ -23,16 +24,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const res = await fetch('/api/cart');
-      if (res.ok) {
-        const data = await res.json();
-        const count = (data.items ?? []).reduce(
-          (acc: number, item: { quantity: number }) => acc + item.quantity,
-          0
-        );
-        setCartCount(count);
-      }
-    } catch {}
+      const { data } = await cartService.getCart();
+      const count = (data.items ?? []).reduce(
+        (acc: number, item: { quantity: number }) => acc + item.quantity,
+        0
+      );
+      setCartCount(count);
+    } catch {
+      setCartCount(0);
+    }
   }, [session]);
 
   useEffect(() => {

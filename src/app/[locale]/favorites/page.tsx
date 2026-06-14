@@ -5,8 +5,12 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import axios from 'axios';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import favoritesService from '@/services/favoritesService';
+import cartService from '@/services/cartService';
+import { useCart } from '@/context/CartContext';
 
 interface FavoriteProduct {
   _id: string;
@@ -28,42 +32,37 @@ export default function FavoritesPage() {
   const params = useParams();
   const router = useRouter();
   const locale = (params?.locale as string) ?? 'es';
+  const { refreshCart } = useCart();
 
   useEffect(() => {
-    fetch('/api/favorites')
-      .then(r => {
-        if (r.status === 401) {
-          router.push(`/${locale}/login`);
-          return null;
-        }
-        return r.json();
-      })
-      .then(data => {
+    favoritesService.getFavorites()
+      .then(({ data }) => {
         if (Array.isArray(data)) setFavorites(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          router.push(`/${locale}/login`);
+        }
+        setLoading(false);
+      });
   }, [locale, router]);
 
   const removeFavorite = async (productId: string) => {
-    const res = await fetch('/api/favorites', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId }),
-    });
-    if (res.ok) {
+    try {
+      await favoritesService.removeFavorite(productId);
       setFavorites(prev => prev.filter(f => f.productId._id !== productId));
-    }
+    } catch { /* silent */ }
   };
 
   const addToCart = async (productId: string) => {
-    const res = await fetch('/api/cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, quantity: 1 }),
-    });
-    if (res.status === 401) {
-      router.push(`/${locale}/login`);
+    try {
+      await cartService.addItem(productId);
+      await refreshCart();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        router.push(`/${locale}/login`);
+      }
     }
   };
 

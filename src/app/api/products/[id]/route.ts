@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProductById } from "@/services/productService";
+import { connectDB } from "@/lib/mongodb";
+import Product from "@/models/Product";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -8,20 +9,18 @@ interface Params {
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const product = await getProductById(id);
+
+    await connectDB();
+    const product = await Product.findById(id)
+      .select("+description +stock +specifications")
+      .lean();
 
     if (!product) {
-      return NextResponse.json(
-        { error: "Producto no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 });
     }
 
     return NextResponse.json(product);
   } catch {
-    return NextResponse.json(
-      { error: "Error al obtener el producto" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener el producto" }, { status: 500 });
   }
 }

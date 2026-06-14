@@ -5,6 +5,9 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import axios from 'axios';
+import cartService from '@/services/cartService';
+import favoritesService from '@/services/favoritesService';
 import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
@@ -27,41 +30,35 @@ export default function ProductCard({ _id, name, price, image, author, initialFa
   const { refreshCart } = useCart();
 
   const handleCart = async () => {
-    const res = await fetch('/api/cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId: _id, quantity: 1 }),
-    });
-    if (res.status === 401) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-    if (res.ok) {
+    try {
+      await cartService.addItem(_id);
       setCartAdded(true);
       setTimeout(() => setCartAdded(false), 1500);
       await refreshCart();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        router.push(`/${locale}/login`);
+      }
     }
   };
 
   const handleFavorite = async () => {
-    const method = isFavorited ? 'DELETE' : 'POST';
-    const res = await fetch('/api/favorites', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId: _id }),
-    });
-    if (res.status === 401) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-    if (res.ok) {
+    try {
+      if (isFavorited) {
+        await favoritesService.removeFavorite(_id);
+      } else {
+        await favoritesService.addFavorite(_id);
+      }
       setIsFavorited(!isFavorited);
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        router.push(`/${locale}/login`);
+      }
     }
   };
 
   return (
     <div className="group bg-[#fefcf5] border-2 border-[#1c1410] flex flex-col">
-      {/* Image */}
       <div className="relative w-full h-52 overflow-hidden border-b-2 border-[#1c1410] bg-[#e8e0cc]">
         <Link href={`/${locale}/products/${_id}`}>
           <Image
@@ -87,7 +84,6 @@ export default function ProductCard({ _id, name, price, image, author, initialFa
         </button>
       </div>
 
-      {/* Info */}
       <div className="p-3 flex flex-col flex-1">
         <Link href={`/${locale}/products/${_id}`}>
           <h3 className="text-xs font-bold text-[#1c1410] leading-tight line-clamp-2 mb-1 hover:text-[#c8860a] transition-colors uppercase tracking-wide">

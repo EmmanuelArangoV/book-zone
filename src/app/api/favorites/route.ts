@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import {
-  getFavoritesByUserId,
-  addFavorite,
-  removeFavorite,
-} from "@/services/favoritesService";
+import { connectDB } from "@/lib/mongodb";
+import Favorite from "@/models/Favorite";
 
 type AuthSession = { user: { id: string } };
 
@@ -21,13 +18,15 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const favorites = await getFavoritesByUserId(session.user.id);
+    await connectDB();
+    const favorites = await Favorite.find({ userId: session.user.id }).populate(
+      "productId",
+      "name price image shortDescription"
+    );
+
     return NextResponse.json(favorites);
   } catch {
-    return NextResponse.json(
-      { error: "Error al obtener los favoritos" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener los favoritos" }, { status: 500 });
   }
 }
 
@@ -39,21 +38,20 @@ export async function POST(req: NextRequest) {
     }
 
     const { productId } = await req.json();
-
     if (!productId) {
-      return NextResponse.json(
-        { error: "productId es requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "productId es requerido" }, { status: 400 });
     }
 
-    const favorite = await addFavorite(session.user.id, productId);
+    await connectDB();
+    const favorite = await Favorite.findOneAndUpdate(
+      { userId: session.user.id, productId },
+      { userId: session.user.id, productId },
+      { upsert: true, new: true }
+    );
+
     return NextResponse.json(favorite, { status: 201 });
   } catch {
-    return NextResponse.json(
-      { error: "Error al agregar a favoritos" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al agregar a favoritos" }, { status: 500 });
   }
 }
 
@@ -65,20 +63,15 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { productId } = await req.json();
-
     if (!productId) {
-      return NextResponse.json(
-        { error: "productId es requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "productId es requerido" }, { status: 400 });
     }
 
-    await removeFavorite(session.user.id, productId);
+    await connectDB();
+    await Favorite.findOneAndDelete({ userId: session.user.id, productId });
+
     return NextResponse.json({ message: "Eliminado de favoritos" });
   } catch {
-    return NextResponse.json(
-      { error: "Error al eliminar de favoritos" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al eliminar de favoritos" }, { status: 500 });
   }
 }

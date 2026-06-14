@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSalesByMonth } from "@/services/salesService";
+import { connectDB } from "@/lib/mongodb";
+import Sale from "@/models/Sale";
 import { sendSalesReport } from "@/lib/mailer";
 
 export async function GET(req: NextRequest) {
@@ -13,19 +14,21 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
     const year = now.getFullYear();
-    // Report covers the previous month so the data is complete
     const month = now.getMonth() === 0 ? 12 : now.getMonth();
     const reportYear = now.getMonth() === 0 ? year - 1 : year;
 
-    const sales = await getSalesByMonth(reportYear, month);
+    await connectDB();
+    const start = new Date(reportYear, month - 1, 1);
+    const end = new Date(reportYear, month, 1);
+    const sales = await Sale.find({ createdAt: { $gte: start, $lt: end } }).populate(
+      "items.productId",
+      "name image"
+    );
 
     await sendSalesReport(sales as never[], month, reportYear);
 
     return NextResponse.json({ message: "Reporte enviado" });
   } catch {
-    return NextResponse.json(
-      { error: "Error al generar el reporte" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al generar el reporte" }, { status: 500 });
   }
 }
